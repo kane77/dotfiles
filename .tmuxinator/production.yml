@@ -1,0 +1,42 @@
+# ~/.tmuxinator/production.yml
+# you can make as many tabs as you wish...
+
+project_name: Production
+project_root: ~/proj/dur
+socket_name: foo # Not needed.  Remove to use default socket
+tabs:
+  - prd03:
+      layout: even-vertical
+      panes:
+        - ssh jboss@prd03
+        - ssh jboss@prd03 "tail -f jboss-4.2.3.GA/server/dur-internal/log/server.log"
+  - prd02:
+      layout: even-vertical
+      panes:
+        - ssh jboss@prd02
+        - ssh jboss@prd02 "tail -f jboss-4.2.3.GA/server/ssblt_xls_to_csv/log/server.log"
+  - prd12:
+      layout: even-vertical
+      panes:
+        - ssh jboss@prd12
+        - ssh jboss@prd12 "tail -f jboss-4.2.3.GA/server/jbossmj-bridge/log/server.log"
+  - prd10:
+      layout: even-vertical
+      panes:
+        - ssh jboss@prd10
+        - ssh jboss@prd10 "tail -f jboss-4.2.3.GA/server/dur-ws/log/server.log"
+  - prd04:
+      layout: even-vertical
+      panes:
+        - ssh jboss@prd04
+        - ssh jboss@prd04 "tail -f jboss-4.2.3.GA/server/dur-workflow/log/server.log"
+  - prd05:
+      layout: even-vertical
+      panes:
+        - ssh jboss@prd05
+        - ssh jboss@prd05 "tail -f jboss-4.2.3.GA/server/dur-ws-external/log/server.log"
+  - prd07:
+      layout: even-vertical
+      panes:
+        - ssh jboss@prd07
+        - ssh jboss@prd07 "tail -f jboss-4.0.5.GA/server/default/log/server.log"

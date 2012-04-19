@@ -1,0 +1,17 @@
+# ~/.tmuxinator/int.yml
+# you can make as many tabs as you wish...
+
+project_name: INT
+project_root: ~/proj/dur
+tabs:
+  - local:
+      layout: main-vertical
+      panes:
+        - #empty, will just run plain bash
+        - top
+  - vm03: 
+      layout: main-vertical
+      panes:
+        - ssh jboss@vm03
+        - ssh jboss@vm03 "tail -f jboss-4.2.3.GA/server/dur-internal/log/server.log"
+        - ssh jboss@vm03 "top"
