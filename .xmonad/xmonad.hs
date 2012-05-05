@@ -347,9 +347,15 @@ myMouseBindings (XConfig {XMonad.modMask = modMask}) = M.fromList $
 -- Run xmonad with all the defaults we set up.
 --
 main = do
+  xmproc <- spawnPipe "/usr/bin/xmobar ~/.xmonad/xmobar.hs"
   xmonad $ defaults {
-      manageHook = manageDocks <+> myManageHook
-      , startupHook = setWMName "LG3D"
+      logHook = dynamicLogWithPP $ xmobarPP {
+            ppOutput = hPutStrLn xmproc
+          , ppTitle = xmobarColor xmobarTitleColor "" . shorten 100
+          , ppCurrent = xmobarColor xmobarCurrentWorkspaceColor ""
+          , ppSep = "   "}
+      , manageHook = manageDocks <+> myManageHook
+, startupHook = setWMName "LG3D"
   }
  
 ------------------------------------------------------------------------
