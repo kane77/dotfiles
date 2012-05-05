@@ -3,7 +3,10 @@
 -- http://github.com/vicfryzel/xmonad-config
  
 import System.IO
+import Data.List
 import System.Exit
+import XMonad.Layout.IM
+import Data.Ratio ((%))
 import XMonad
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
@@ -20,6 +23,8 @@ import XMonad.Layout.Dishes
 import XMonad.Layout.Cross
 import XMonad.Layout.Accordion
 import XMonad.Layout.Circle
+import XMonad.Prompt
+import XMonad.Prompt.Window
 import XMonad.Config.Gnome
 import XMonad.Util.Run(spawnPipe)
 import XMonad.Util.EZConfig(additionalKeys)
@@ -62,6 +67,7 @@ myManageHook = composeAll
     , className =? "Galculator"     --> doFloat
     , className =? "Gimp"           --> doFloat
     , className =? "Google-chrome"  --> doShift "2:web"
+    , className =? "firefox"  --> doShift "2:web"
     , resource  =? "gpicview"       --> doFloat
     , resource  =? "kdesktop"       --> doIgnore
     , className  =? "Do"       --> doIgnore
@@ -87,12 +93,11 @@ myLayout = avoidStruts (
     Tall 1 (3/100) (1/2) |||
     Mirror (Tall 1 (3/100) (1/2)) |||
     tabbed shrinkText tabConfig |||
-    Full |||
     Accordion |||
+    Mirror Accordion |||
     Grid False |||
     ThreeCol 1 (3/100) (1/2) |||
     Dishes 2 (1/6) |||
-    simpleCross |||
     dragPane Horizontal 0.1 0.5 |||
     Circle |||
     spiral (6/7)) |||
@@ -104,7 +109,7 @@ myLayout = avoidStruts (
 -- Currently based on the ir_black theme.
 --
 myNormalBorderColor  = "#7c7c7c"
-myFocusedBorderColor = "#ffb6b0"
+myFocusedBorderColor = "#B3FF8C"
 
 -- Colors for text and backgrounds of each tab when in "Tabbed" layout.
 tabConfig = defaultTheme {
@@ -135,7 +140,9 @@ myBorderWidth = 5
 -- "windows key" is usually mod4Mask.
 --
 myModMask = mod1Mask
- 
+
+myPromptConfig = defaultXPConfig { searchPredicate = isInfixOf,autoComplete = Just 500000 }
+
 myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   ----------------------------------------------------------------------
   -- Custom key bindings
@@ -152,7 +159,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- Launch dmenu via yeganesh.
   -- Use this to launch programs without a key binding.
   , ((modMask, xK_p),
-     spawn "exe=`dmenu_path | yeganesh` && eval \"exec $exe\"")
+     spawn "gnome-do")
 
   -- Take a screenshot in select mode.
   -- After pressing this key binding, click a window, or draw a rectangle with
@@ -228,7 +235,10 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- Move focus to the master window.
   , ((modMask, xK_m),
      windows W.focusMaster  )
-
+  , ((modMask .|. shiftMask, xK_g     ), 
+     windowPromptGoto  myPromptConfig)
+  , ((modMask .|. shiftMask, xK_b     ),
+     windowPromptBring myPromptConfig)
   -- Swap the focused window and the master window.
   , ((modMask, xK_Return),
      windows W.swapMaster)
@@ -294,7 +304,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
 -- Focus rules
 -- True if your focus should follow your mouse cursor.
 myFocusFollowsMouse :: Bool
-myFocusFollowsMouse = True
+myFocusFollowsMouse = False
  
 myMouseBindings (XConfig {XMonad.modMask = modMask}) = M.fromList $
   [
