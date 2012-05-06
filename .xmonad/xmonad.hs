@@ -8,6 +8,7 @@ import System.Exit
 import XMonad.Layout.IM
 import Data.Ratio ((%))
 import XMonad
+import XMonad.Actions.GridSelect
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
@@ -25,6 +26,7 @@ import XMonad.Layout.Accordion
 import XMonad.Layout.Circle
 import XMonad.Prompt
 import XMonad.Prompt.Window
+import XMonad.Prompt.Workspace
 import XMonad.Config.Gnome
 import XMonad.Util.Run(spawnPipe)
 import XMonad.Util.EZConfig(additionalKeys)
@@ -44,7 +46,7 @@ myTerminal = "/usr/bin/gnome-terminal"
 -- Workspaces
 -- The default number of workspaces (virtual screens) and their names.
 --
-myWorkspaces = ["1:term","2:web","3:code","4:vm","5:media"] ++ map show [6..9]
+myWorkspaces = ["1:term","2:web","3:files","4:im","5:media"] ++ map show [6..9]
  
 
 ------------------------------------------------------------------------
@@ -71,10 +73,10 @@ myManageHook = composeAll
     , resource  =? "gpicview"       --> doFloat
     , resource  =? "kdesktop"       --> doIgnore
     , className  =? "Do"       --> doIgnore
+    , className  =? "nautilus"       --> doShift "3:files"
     , className =? "MPlayer"        --> doFloat
     , resource  =? "skype"          --> doFloat
-    , className =? "VirtualBox"     --> doShift "4:vm"
-    , className =? "Xchat"          --> doShift "5:media"
+    , className =? "Xchat"          --> doShift "4:im"
     , isDialog --> doFloat
     , isFullscreen --> (doF W.focusDown <+> doFullFloat)]
 
@@ -160,7 +162,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- Use this to launch programs without a key binding.
   , ((modMask, xK_p),
      spawn "gnome-do")
-
+  , ((modMask, xK_g), goToSelected defaultGSConfig )
   -- Take a screenshot in select mode.
   -- After pressing this key binding, click a window, or draw a rectangle with
   -- the mouse.
@@ -239,6 +241,8 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
      windowPromptGoto  myPromptConfig)
   , ((modMask .|. shiftMask, xK_b     ),
      windowPromptBring myPromptConfig)
+--  , ((modMask .|. shiftMask, xK_m    V ),
+--     workspacePrompt myPromptConfig . )
   -- Swap the focused window and the master window.
   , ((modMask, xK_Return),
      windows W.swapMaster)
@@ -353,7 +357,7 @@ main = do
             ppOutput = hPutStrLn xmproc
           , ppTitle = xmobarColor xmobarTitleColor "" . shorten 100
           , ppCurrent = xmobarColor xmobarCurrentWorkspaceColor ""
-          , ppSep = "   "}
+          , ppSep = "     |      "}
       , manageHook = manageDocks <+> myManageHook
 , startupHook = setWMName "LG3D"
   }
