@@ -23,13 +23,18 @@ import XMonad.Layout.HintedGrid
 import XMonad.Layout.Dishes
 import XMonad.Layout.Cross
 import XMonad.Layout.Accordion
+import XMonad.Layout.Magnifier
 import XMonad.Layout.Circle
 import XMonad.Prompt
 import XMonad.Prompt.Window
 import XMonad.Prompt.Workspace
 import XMonad.Config.Gnome
+import XMonad.Util.Replace
 import XMonad.Util.Run(spawnPipe)
 import XMonad.Util.EZConfig(additionalKeys)
+import XMonad.Hooks.UrgencyHook
+import XMonad.Hooks.EwmhDesktops
+import Graphics.X11.ExtraTypes.XF86
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
@@ -76,6 +81,7 @@ myManageHook = composeAll
     , className  =? "nautilus"       --> doShift "3:files"
     , className =? "MPlayer"        --> doFloat
     , resource  =? "skype"          --> doFloat
+    , resource  =? "amarok"          --> doShift "5:media"
     , className =? "Xchat"          --> doShift "4:im"
     , isDialog --> doFloat
     , isFullscreen --> (doF W.focusDown <+> doFullFloat)]
@@ -95,16 +101,10 @@ myLayout = avoidStruts (
     Tall 1 (3/100) (1/2) |||
     Mirror (Tall 1 (3/100) (1/2)) |||
     tabbed shrinkText tabConfig |||
-    Accordion |||
-    Mirror Accordion |||
-    Grid False |||
-    ThreeCol 1 (3/100) (1/2) |||
-    Dishes 2 (1/6) |||
-    dragPane Horizontal 0.1 0.5 |||
+    magnifier (Grid False) |||
     Circle |||
-    spiral (6/7)) |||
     noBorders (fullscreenFull Full)
-
+    )
 
 ------------------------------------------------------------------------
 -- Colors and borders
@@ -130,7 +130,7 @@ xmobarTitleColor = "#FFB6B0"
 xmobarCurrentWorkspaceColor = "#CEFFAC"
 
 -- Width of the window border in pixels.
-myBorderWidth = 5
+myBorderWidth = 4
 
 
 ------------------------------------------------------------------------
@@ -162,7 +162,6 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- Use this to launch programs without a key binding.
   , ((modMask, xK_p),
      spawn "gnome-do")
-  , ((modMask, xK_g), goToSelected defaultGSConfig )
   -- Take a screenshot in select mode.
   -- After pressing this key binding, click a window, or draw a rectangle with
   -- the mouse.
@@ -174,18 +173,9 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((modMask .|. controlMask .|. shiftMask, xK_p),
      spawn "screenshot")
 
-  -- Mute volume.
-  , ((0, 0x1008FF12),
-     spawn "amixer -q set Front toggle")
-
-  -- Decrease volume.
-  , ((0, 0x1008FF11),
-     spawn "amixer -q set Front 10%-")
-
-  -- Increase volume.
-  , ((0, 0x1008FF13),
-     spawn "amixer -q set Front 10%+")
-
+    , ((0, xF86XK_AudioMute), spawn "sh /home/kane/configs/bin/voldzen.sh t -d")                     --Mute/unmute volume
+    , ((0, xF86XK_AudioRaiseVolume), spawn "sh /home/kane/configs/bin/voldzen.sh + -d")              --Raise volume
+    , ((0, xF86XK_AudioLowerVolume), spawn "sh /home/kane/configs/bin/voldzen.sh - -d")              --Lower volume
   -- Audio previous.
   , ((0, 0x1008FF16),
      spawn "")
@@ -202,6 +192,11 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((0, 0x1008FF2C),
      spawn "eject -T")
 
+  , ((modMask .|. controlMask .|. shiftMask, xK_plus ), sendMessage MagnifyMore)
+  , ((modMask .|. controlMask              , xK_minus), sendMessage MagnifyLess)
+  , ((modMask .|. controlMask              , xK_o    ), sendMessage ToggleOff  )
+  , ((modMask .|. controlMask .|. shiftMask, xK_o    ), sendMessage ToggleOn   )
+  , ((modMask .|. controlMask              , xK_m    ), sendMessage Toggle     )
   --------------------------------------------------------------------
   -- "Standard" xmonad key bindings
   --
@@ -216,7 +211,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
 
   --  Reset the layouts on the current workspace to default.
   , ((modMask .|. shiftMask, xK_space),
-     setLayout $ XMonad.layoutHook conf)
+          setLayout $ XMonad.layoutHook conf)
 
   -- Resize viewed windows to the correct size.
   , ((modMask, xK_n),
@@ -237,9 +232,9 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- Move focus to the master window.
   , ((modMask, xK_m),
      windows W.focusMaster  )
-  , ((modMask .|. shiftMask, xK_g     ), 
+  , ((modMask, xK_g), 
      windowPromptGoto  myPromptConfig)
-  , ((modMask .|. shiftMask, xK_b     ),
+  , ((modMask , xK_b     ),
      windowPromptBring myPromptConfig)
 --  , ((modMask .|. shiftMask, xK_m    V ),
 --     workspacePrompt myPromptConfig . )
@@ -308,7 +303,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
 -- Focus rules
 -- True if your focus should follow your mouse cursor.
 myFocusFollowsMouse :: Bool
-myFocusFollowsMouse = False
+myFocusFollowsMouse = True
  
 myMouseBindings (XConfig {XMonad.modMask = modMask}) = M.fromList $
   [
@@ -338,6 +333,97 @@ myMouseBindings (XConfig {XMonad.modMask = modMask}) = M.fromList $
 -- > logHook = dynamicLogDzen
 --
  
+myFont               = "-xos5-terminus-medium-r-normal-*-12-120-72-72-c-60-*-*"
+dzenFont             = "-*-montecarlo-medium-r-normal-*-11-*-*-*-*-*-*-*"
+colorBlack           = "#020202" --Background (Dzen_BG)
+colorBlackAlt        = "#1c1c1c" --Black Xdefaults
+colorGray            = "#444444" --Gray       (Dzen_FG2)
+colorGrayAlt         = "#161616" --Gray dark
+colorWhite           = "#a9a6af" --Foreground (Shell_FG)
+colorWhiteAlt        = "#9d9d9d" --White dark (Dzen_FG)
+colorMagenta         = "#8e82a2"
+colorBlue            = "#3955c4"
+colorRed             = "#d74b73"
+colorGreen           = "#99cc66"
+myArrow              = "^fg(" ++ colorWhiteAlt ++ ")>^fg(" ++ colorBlue ++ ")>^fg(" ++ colorGray ++ ")>"
+--------------------------------------------------------------------------------------------
+-- STATUS BARS CONFIG                                                                     --
+--------------------------------------------------------------------------------------------
+
+-- UrgencyHook
+myUrgencyHook = withUrgencyHook dzenUrgencyHook
+	{ args = ["-fn", dzenFont, "-bg", colorBlack, "-fg", colorGreen] }
+
+-- StatusBars
+myWorkspaceBar, myBottomStatusBar, myTopStatusBar :: String
+myWorkspaceBar    = "dzen2 -x '0' -y '1034' -h '16' -w '870' -ta 'l' -fg '" ++ colorWhiteAlt ++ "' -bg '" ++ colorBlack ++ "' -fn '" ++ dzenFont ++ "' -p -e ''"
+myBottomStatusBar = "/home/kane/configs/bin/bottomstatusbar.sh"
+myTopStatusBar    = "/home/kane/configs/bin/topstatusbar.sh"
+
+-- myWorkspaceBar config
+myLogHook :: Handle -> X ()
+myLogHook h = dynamicLogWithPP $ defaultPP
+    { ppOutput          = hPutStrLn h
+	, ppSort            = (ppSort defaultPP) -- hide "NSP" from workspace list
+	, ppOrder           = orderText
+	, ppExtras          = []
+	, ppSep             = "^fg(" ++ colorGray ++ ")|"
+	, ppWsSep           = ""
+	, ppCurrent         = dzenColor colorBlue     colorBlack . pad
+	, ppUrgent          = dzenColor colorGreen    colorBlack . pad . wrapClickWorkSpace . (\a -> (a,a))
+	, ppVisible         = dzenColor colorGray     colorBlack . pad . wrapClickWorkSpace . (\a -> (a,a))
+	, ppHidden          = dzenColor colorWhiteAlt colorBlack . pad . wrapClickWorkSpace . (\a -> (a,a))
+	, ppHiddenNoWindows = dzenColor colorGray     colorBlack . pad . wrapClickWorkSpace . (\a -> (a,a))
+	, ppLayout          = dzenColor colorBlue     colorBlack . pad . wrapClickLayout . layoutText
+	, ppTitle           = dzenColor colorWhiteAlt colorBlack . pad . wrapClickTitle . titleText . dzenEscape
+	}
+	where
+		--display config
+		orderText (ws:l:t:_) = [ws,l,t]
+		titleText [] = "Desktop " ++ myArrow
+		titleText x = (shorten 82 x) ++ " " ++ myArrow
+		layoutText "Minimize T"  = "ReTall"
+		layoutText "Minimize O"  = "OneBig"
+		layoutText "Minimize TS" = "Tabbed"
+		layoutText "Minimize TM" = "Master"
+		layoutText "Minimize M"  = "Mosaic"
+		layoutText "Minimize MT" = "Mirror"
+		layoutText "Minimize G"  = "Mosaic"
+		layoutText "Minimize C"  = "Mirror"
+		layoutText "Minimize ReflectX T"  = "^fg(" ++ colorGreen ++ ")ReTall X^fg()"
+		layoutText "Minimize ReflectX O"  = "^fg(" ++ colorGreen ++ ")OneBig X^fg()"
+		layoutText "Minimize ReflectX TS" = "^fg(" ++ colorGreen ++ ")Tabbed X^fg()"
+		layoutText "Minimize ReflectX TM" = "^fg(" ++ colorGreen ++ ")Master X^fg()"
+		layoutText "Minimize ReflectX M"  = "^fg(" ++ colorGreen ++ ")Mosaic X^fg()"
+		layoutText "Minimize ReflectX MT" = "^fg(" ++ colorGreen ++ ")Mirror X^fg()"
+		layoutText "Minimize ReflectX G"  = "^fg(" ++ colorGreen ++ ")Mosaic X^fg()"
+		layoutText "Minimize ReflectX C"  = "^fg(" ++ colorGreen ++ ")Mirror X^fg()"
+		layoutText "Minimize ReflectY T"  = "^fg(" ++ colorGreen ++ ")ReTall Y^fg()"
+		layoutText "Minimize ReflectY O"  = "^fg(" ++ colorGreen ++ ")OneBig Y^fg()"
+		layoutText "Minimize ReflectY TS" = "^fg(" ++ colorGreen ++ ")Tabbed Y^fg()"
+		layoutText "Minimize ReflectY TM" = "^fg(" ++ colorGreen ++ ")Master Y^fg()"
+		layoutText "Minimize ReflectY M"  = "^fg(" ++ colorGreen ++ ")Mosaic Y^fg()"
+		layoutText "Minimize ReflectY MT" = "^fg(" ++ colorGreen ++ ")Mirror Y^fg()"
+		layoutText "Minimize ReflectY G"  = "^fg(" ++ colorGreen ++ ")Mosaic Y^fg()"
+		layoutText "Minimize ReflectY C"  = "^fg(" ++ colorGreen ++ ")Mirror Y^fg()"
+		layoutText "Minimize ReflectX ReflectY T"  = "^fg(" ++ colorGreen ++ ")ReTall XY^fg()"
+		layoutText "Minimize ReflectX ReflectY O"  = "^fg(" ++ colorGreen ++ ")OneBig XY^fg()"
+		layoutText "Minimize ReflectX ReflectY TS" = "^fg(" ++ colorGreen ++ ")Tabbed XY^fg()"
+		layoutText "Minimize ReflectX ReflectY TM" = "^fg(" ++ colorGreen ++ ")Master XY^fg()"
+		layoutText "Minimize ReflectX ReflectY M"  = "^fg(" ++ colorGreen ++ ")Mosaic XY^fg()"
+		layoutText "Minimize ReflectX ReflectY MT" = "^fg(" ++ colorGreen ++ ")Mirror XY^fg()"
+		layoutText "Minimize ReflectX ReflectY G"  = "^fg(" ++ colorGreen ++ ")Mosaic XY^fg()"
+		layoutText "Minimize ReflectX ReflectY C"  = "^fg(" ++ colorGreen ++ ")Mirror XY^fg()"
+		layoutText x = "^fg(" ++ colorGreen ++ ")" ++ x ++ "^fg()"
+		--clickable config
+		wrapClickLayout content = "^ca(1,xdotool key alt+space)" ++ content ++ "^ca()"                                                           --clickable layout
+		wrapClickTitle content = "^ca(1,xdotool key alt+j)" ++ content ++ "^ca()"                                                                --clickable title
+		wrapClickWorkSpace (idx,str) = "^ca(1," ++ xdo "w;" ++ xdo index ++ ")" ++ "^ca(3," ++ xdo "e;" ++ xdo index ++ ")" ++ str ++ "^ca()^ca()" --clickable workspaces
+			where
+				wsIdxToString Nothing = "1"
+				wsIdxToString (Just n) = show (n+1)
+				index = wsIdxToString (elemIndex idx myWorkspaces)
+				xdo key = "xdotool key alt+" ++ key
 
 ------------------------------------------------------------------------
 -- Startup hook
@@ -350,17 +436,17 @@ myMouseBindings (XConfig {XMonad.modMask = modMask}) = M.fromList $
 ------------------------------------------------------------------------
 -- Run xmonad with all the defaults we set up.
 --
+main :: IO ()
 main = do
-  xmproc <- spawnPipe "/usr/bin/xmobar ~/.xmonad/xmobar.hs"
-  xmonad $ defaults {
-      logHook = dynamicLogWithPP $ xmobarPP {
-            ppOutput = hPutStrLn xmproc
-          , ppTitle = xmobarColor xmobarTitleColor "" . shorten 100
-          , ppCurrent = xmobarColor xmobarCurrentWorkspaceColor ""
-          , ppSep = "     |      "}
-      , manageHook = manageDocks <+> myManageHook
-, startupHook = setWMName "LG3D"
-  }
+    workspaceBar            <- spawnPipe myWorkspaceBar
+    bottomStatusBar         <- spawnPipe myBottomStatusBar
+    topStatusBar            <- spawnPipe myTopStatusBar
+    replace
+    xmonad $ myUrgencyHook $ defaults {
+        logHook            = (myLogHook workspaceBar) <+> ewmhDesktopsLogHook >> setWMName "LG3D" --ewmh needed so that chromium gain focus
+        , manageHook = manageDocks <+> myManageHook
+        , startupHook = setWMName "LG3D"
+    }
  
 ------------------------------------------------------------------------
 -- Combine it all together
