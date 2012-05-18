@@ -19,7 +19,7 @@ import XMonad.Layout.Spiral
 import XMonad.Layout.Tabbed
 import XMonad.Layout.DragPane
 import XMonad.Layout.ThreeColumns
-import XMonad.Layout.HintedGrid
+import XMonad.Layout.Grid
 import XMonad.Layout.Dishes
 import XMonad.Layout.Cross
 import XMonad.Layout.Accordion
@@ -51,7 +51,7 @@ myTerminal = "/usr/bin/gnome-terminal"
 -- Workspaces
 -- The default number of workspaces (virtual screens) and their names.
 --
-myWorkspaces = ["1:term","2:web","3:files","4:im","5:media"] ++ map show [6..9]
+myWorkspaces = ["1:code","2:web","3:term","4:im","5:sql","6:files","7:media"] ++ map show [8..9]
  
 
 ------------------------------------------------------------------------
@@ -68,6 +68,16 @@ myWorkspaces = ["1:term","2:web","3:files","4:im","5:media"] ++ map show [6..9]
 -- To match on the WM_NAME, you can use 'title' in the same way that
 -- 'className' and 'resource' are used below.
 --
+--myManageHook = composeAll . concat $
+--    [ [ className   =? c --> doFloat           | c <- myFloats]
+--    , [ title       =? t --> doFloat           | t <- myOtherFloats]
+--    , [ className   =? c --> doF (W.shift "2:web") | c <- webApps]
+--    , [ className   =? c --> doF (W.shift "3:term") | c <- ircApps]
+--    ]
+--    where   myFloats      = ["MPlayer", "Gimp"]
+--            myOtherFloats = ["alsamixer"]
+--            webApps       = ["Firefox-bin", "Opera"] -- open on desktop 2
+--            imApps        = ["Ksirc"]                -- open on desktop 3
 myManageHook = composeAll
     [ className =? "Chromium"       --> doShift "2:web"
     , resource  =? "desktop_window" --> doIgnore
@@ -78,13 +88,21 @@ myManageHook = composeAll
     , resource  =? "gpicview"       --> doFloat
     , resource  =? "kdesktop"       --> doIgnore
     , className  =? "Do"       --> doIgnore
-    , className  =? "nautilus"       --> doShift "3:files"
+    , className  =? "nautilus"       --> doShift "6:files"
+    , className  =? "terminal"       --> doShift "3:term"
     , className =? "MPlayer"        --> doFloat
-    , resource  =? "skype"          --> doFloat
-    , resource  =? "amarok"          --> doShift "5:media"
+    , resource =? "xfce4-notifyd" --> doIgnore
+    , resource  =? "skype"          --> doShift "4:im"
+--    , className =? "Skype" <&&> role =? "" --> doCenterFloat'
+    , resource  =? "amarok"          --> doShift "7:media"
     , className =? "Xchat"          --> doShift "4:im"
     , isDialog --> doFloat
     , isFullscreen --> (doF W.focusDown <+> doFullFloat)]
+    where
+        role = stringProperty "WM_WINDOW_ROLE"
+        doMaster = doF W.shiftMaster
+        doCenterFloat' = doCenterFloat <+> doMaster
+        doFullFloat' = doFullFloat <+> doMaster
 
 
 ------------------------------------------------------------------------
@@ -101,8 +119,9 @@ myLayout = avoidStruts (
     Tall 1 (3/100) (1/2) |||
     Mirror (Tall 1 (3/100) (1/2)) |||
     tabbed shrinkText tabConfig |||
-    magnifier (Grid False) |||
+    magnifier (Grid) |||
     Circle |||
+    withIM (1%7) (Title "martin.harvan1 - Skype™ (Beta)") Grid |||
     noBorders (fullscreenFull Full)
     )
 
@@ -173,9 +192,9 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((modMask .|. controlMask .|. shiftMask, xK_p),
      spawn "screenshot")
 
-    , ((0, xF86XK_AudioMute), spawn "sh /home/kane/configs/bin/voldzen.sh t -d")                     --Mute/unmute volume
-    , ((0, xF86XK_AudioRaiseVolume), spawn "sh /home/kane/configs/bin/voldzen.sh + -d")              --Raise volume
-    , ((0, xF86XK_AudioLowerVolume), spawn "sh /home/kane/configs/bin/voldzen.sh - -d")              --Lower volume
+    , ((0, xF86XK_AudioMute), spawn "sh /home/mharvan/configs/bin/voldzen.sh t -d")                     --Mute/unmute volume
+    , ((0, xF86XK_AudioRaiseVolume), spawn "sh /home/mharvan/configs/bin/voldzen.sh + -d")              --Raise volume
+    , ((0, xF86XK_AudioLowerVolume), spawn "sh /home/mharvan/configs/bin/voldzen.sh - -d")              --Lower volume
   -- Audio previous.
   , ((0, 0x1008FF16),
      spawn "")
@@ -356,9 +375,9 @@ myUrgencyHook = withUrgencyHook dzenUrgencyHook
 
 -- StatusBars
 myWorkspaceBar, myBottomStatusBar, myTopStatusBar :: String
-myWorkspaceBar    = "dzen2 -x '0' -y '1034' -h '16' -w '870' -ta 'l' -fg '" ++ colorWhiteAlt ++ "' -bg '" ++ colorBlack ++ "' -fn '" ++ dzenFont ++ "' -p -e ''"
-myBottomStatusBar = "/home/kane/configs/bin/bottomstatusbar.sh"
-myTopStatusBar    = "/home/kane/configs/bin/topstatusbar.sh"
+myWorkspaceBar    = "dzen2 -x '0' -y '1034' -h '16' -w '1000' -ta 'l' -fg '" ++ colorWhiteAlt ++ "' -bg '" ++ colorBlack ++ "' -fn '" ++ dzenFont ++ "' -p -e ''"
+myBottomStatusBar = "/home/mharvan/configs/bin/bottomstatusbar.sh"
+myTopStatusBar    = "/home/mharvan/configs/bin/topstatusbar.sh"
 
 -- myWorkspaceBar config
 myLogHook :: Handle -> X ()
@@ -442,7 +461,7 @@ main = do
     bottomStatusBar         <- spawnPipe myBottomStatusBar
     topStatusBar            <- spawnPipe myTopStatusBar
     replace
-    xmonad $ myUrgencyHook $ defaults {
+    xmonad $ myUrgencyHook $ ewmh defaults {
         logHook            = (myLogHook workspaceBar) <+> ewmhDesktopsLogHook >> setWMName "LG3D" --ewmh needed so that chromium gain focus
         , manageHook = manageDocks <+> myManageHook
         , startupHook = setWMName "LG3D"

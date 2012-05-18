@@ -31,14 +31,16 @@ CPUTemp=0
 GPUTemp=0
 CPULoad0=0
 CPULoad1=0
+CPULoad2=0
+CPULoad3=0
 MpdInfo=0
 MpdRandom="Off"
 MpdRepeat="Off"
 
 #clickable areas
-VOL_MUTE_CMD="sh /home/kane/configs/bin/volosd.sh mute"
-VOL_UP_CMD="sh /home/kane/configs/bin/volosd.sh up"
-VOL_DOWN_CMD="sh /home/kane/configs/bin/volosd.sh down"
+VOL_MUTE_CMD="sh /home/mharvan/configs/bin/volosd.sh mute"
+VOL_UP_CMD="sh /home/mharvan/configs/bin/volosd.sh up"
+VOL_DOWN_CMD="sh /home/mharvan/configs/bin/volosd.sh down"
 DROP_START_CMD="dropbox start"
 DROP_STOP_CMD="dropbox stop"
 MPD_REP_CMD="mpc -h 127.0.0.1 repeat"
@@ -66,7 +68,13 @@ printVolInfo() {
 printCPUInfo() {
 	[[ $CPULoad0 -gt 70 ]] && CPULoad0="^fg($CRIT)$CPULoad0^fg()"
 	[[ $CPULoad1 -gt 70 ]] && CPULoad1="^fg($CRIT)$CPULoad1^fg()"
-	echo -n " ^fg($DZEN_FG2)CPU ^fg($BAR_FG)${CPULoad0}%^fg($DZEN_FG2)/^fg($BAR_FG)${CPULoad1}%"
+	[[ $CPULoad2 -gt 70 ]] && CPULoad2="^fg($CRIT)$CPULoad2^fg()"
+	[[ $CPULoad3 -gt 70 ]] && CPULoad3="^fg($CRIT)$CPULoad3^fg()"
+	[[ $CPULoad0 -lt 100 ]] && CPULoad0=" ^fg($CRIT)$CPULoad0^fg()"
+	[[ $CPULoad1 -lt 100 ]] && CPULoad1=" ^fg($CRIT)$CPULoad1^fg()"
+	[[ $CPULoad2 -lt 100 ]] && CPULoad2=" ^fg($CRIT)$CPULoad2^fg()"
+	[[ $CPULoad3 -lt 100 ]] && CPULoad3=" ^fg($CRIT)$CPULoad3^fg()"
+	echo -n " ^fg($DZEN_FG2)CPU ^fg($BAR_FG)${CPULoad0}%^fg($DZEN_FG2)/^fg($BAR_FG)${CPULoad1}%^fg($DZEN_FG2)/^fg($BAR_FG)${CPULoad2}%^fg($DZEN_FG2)/^fg($BAR_FG)${CPULoad3}%^fg($DZEN_FG2)/"
 	return
 }
 
@@ -112,12 +120,11 @@ printSpace() {
 
 printLeft() {
 	while true; do
-		read CPULoad0 CPULoad1 CPUFreq MemUsed MemPerc MpdInfo MpdRandom MpdRepeat
+		read CPULoad0 CPULoad1 CPULoad2 CPULoad3 CPUFreq MemUsed MemPerc 
 		printVolInfo
 		printSpace
 		printDropBoxInfo
 		printSpace
-		printMpdInfo
 		echo -n " ^fg()>^fg($BAR_FG)>^fg($DZEN_FG2)>"
 		echo
 	done
@@ -126,7 +133,7 @@ printLeft() {
 
 printRight() {
 	while true; do
-		read CPULoad0 CPULoad1 CPUFreq MemUsed MemPerc MpdInfo MpdRandom MpdRepeat
+		read CPULoad0 CPULoad1 CPULoad2 CPULoad3 CPUFreq MemUsed MemPerc
 		printCPUInfo
 		printSpace
 		printMemInfo

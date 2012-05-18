@@ -6,7 +6,7 @@
 #Layout
 BAR_H=9
 BIGBAR_W=65
-WIDTH=500 #220 for trayer
+WIDTH=680 #220 for trayer
 HEIGHT=16
 X_POS=1000 #1060 for trayer and -w 939 in xmonad.hs
 Y_POS=1034
@@ -28,11 +28,9 @@ WIFISIGNAL=0
 printDiskInfo() {
 	RFSP=$(df -h / | tail -1 | awk '{ print $5 }' | tr -d '%')
 	BFSP=$(df -h /boot | tail -1 | awk '{ print $5 }' | tr -d '%')
-	G=$(df -h /media/500G | tail -1 | awk '{ print $5 }' | tr -d '%')
 	H=$(df -h /home | tail -1 | awk '{ print $5 }' | tr -d '%')
 	echo -n "^fg($DZEN_FG2)| ROOT ^fg($BAR_FG)${RFSP}% "
 	echo -n "^fg($DZEN_FG2)| BOOT ^fg($BAR_FG)${BFSP}%"
-	echo -n "^fg($DZEN_FG2)| 500G ^fg($BAR_FG)${G}%"
 	echo -n "^fg($DZEN_FG2)| HOME ^fg($BAR_FG)${H}%"
 	return
 }
@@ -80,9 +78,7 @@ printBottomBar() {
 	while true; do
 		printDiskInfo
 		printSpace
-		printBattery
 		printSpace
-		printWifiInfo
 		echo
 		sleep $INTERVAL
 	done
@@ -90,10 +86,10 @@ printBottomBar() {
 }
 
 tray() {
-	trayer --edge bottom --align right --SetDockType true --SetPartialStrut true --expand true --width 10 --height 16 --transparent true --alpha 0 --tint 0x050505 --margin 215
+    trayer --edge bottom --align right --SetDockType true --SetPartialStrut false --expand true --width 5 --height 16 --transparent true --alpha 0 --tint 0x050505 --margin 1680
 	return
 }
 
 #Print all and pipe into dzen2
 printBottomBar | dzen2 -x $X_POS -y $Y_POS -w $WIDTH -h $HEIGHT -fn $FONT -ta 'r' -bg $DZEN_BG -fg $DZEN_FG -p -e ''
-#tra1034
+tray
