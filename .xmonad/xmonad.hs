@@ -192,9 +192,9 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((modMask .|. controlMask .|. shiftMask, xK_p),
      spawn "screenshot")
 
-    , ((0, xF86XK_AudioMute), spawn "sh /home/mharvan/configs/bin/voldzen.sh t -d")                     --Mute/unmute volume
-    , ((0, xF86XK_AudioRaiseVolume), spawn "sh /home/mharvan/configs/bin/voldzen.sh + -d")              --Raise volume
-    , ((0, xF86XK_AudioLowerVolume), spawn "sh /home/mharvan/configs/bin/voldzen.sh - -d")              --Lower volume
+    , ((0, xF86XK_AudioMute), spawn "sh /home/kane/configs/bin/voldzen.sh t -d")                     --Mute/unmute volume
+    , ((0, xF86XK_AudioRaiseVolume), spawn "sh /home/kane/configs/bin/voldzen.sh + -d")              --Raise volume
+    , ((0, xF86XK_AudioLowerVolume), spawn "sh /home/kane/configs/bin/voldzen.sh - -d")              --Lower volume
   -- Audio previous.
   , ((0, 0x1008FF16),
      spawn "")
@@ -376,8 +376,8 @@ myUrgencyHook = withUrgencyHook dzenUrgencyHook
 -- StatusBars
 myWorkspaceBar, myBottomStatusBar, myTopStatusBar :: String
 myWorkspaceBar    = "dzen2 -x '0' -y '1034' -h '16' -w '1000' -ta 'l' -fg '" ++ colorWhiteAlt ++ "' -bg '" ++ colorBlack ++ "' -fn '" ++ dzenFont ++ "' -p -e ''"
-myBottomStatusBar = "/home/mharvan/configs/bin/bottomstatusbar.sh"
-myTopStatusBar    = "/home/mharvan/configs/bin/topstatusbar.sh"
+myBottomStatusBar = "/home/kane/configs/bin/bottomstatusbar.sh"
+myTopStatusBar    = "/home/kane/configs/bin/topstatusbar.sh"
 
 -- myWorkspaceBar config
 myLogHook :: Handle -> X ()

@@ -38,9 +38,9 @@ MpdRandom="Off"
 MpdRepeat="Off"
 
 #clickable areas
-VOL_MUTE_CMD="sh /home/mharvan/configs/bin/volosd.sh mute"
-VOL_UP_CMD="sh /home/mharvan/configs/bin/volosd.sh up"
-VOL_DOWN_CMD="sh /home/mharvan/configs/bin/volosd.sh down"
+VOL_MUTE_CMD="sh /home/kane/configs/bin/volosd.sh mute"
+VOL_UP_CMD="sh /home/kane/configs/bin/volosd.sh up"
+VOL_DOWN_CMD="sh /home/kane/configs/bin/volosd.sh down"
 DROP_START_CMD="dropbox start"
 DROP_STOP_CMD="dropbox stop"
 MPD_REP_CMD="mpc -h 127.0.0.1 repeat"
