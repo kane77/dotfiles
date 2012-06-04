@@ -9,6 +9,7 @@ import XMonad.Layout.IM
 import Data.Ratio ((%))
 import XMonad
 import XMonad.Actions.GridSelect
+import XMonad.Actions.TopicSpace
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
@@ -53,7 +54,47 @@ myTerminal = "/usr/bin/gnome-terminal"
 --
 myWorkspaces = ["1:code","2:web","3:term","4:im","5:sql","6:files","7:media"] ++ map show [8..9]
  
+myTopics :: [Topic]
+myTopics =
+    [  "eclipse", "web", "terminal", "skype", "sql", "files"
+        , "mail", "music", "dashboard", "talk", "text", "tools", "persloadm", "perforce", "facebook", "xmonad", "prod", "irc"
+    ]
+myTopicConfig :: TopicConfig
+myTopicConfig = defaultTopicConfig
+    { topicDirs = M.fromList $
+        [("eclipse","proj/branches/VODCms")]
+        , defaultTopicAction = const $ spawnShell >*> 3
+        , defaultTopic = "dashboard"
+        , topicActions = M.fromList $
+        [ ("eclipse", spawn "eclipse")
+          ,("web", spawn "firefox")
+          ,("skype", spawn "skype")
+          ,("facebook", spawn "empathy")
+          ,("mail", spawn "evolution")
+          ,("sql", spawn "oracle-sqldeveloper")
+          ,("perforce", spawn "p4v")
+          ,("irc" , spawn "xchat")
+          ,("persloterm", spawn "persloterm")
+          ,("files", spawn "marlin")]
+    }
 
+spawnShell :: X ()
+spawnShell = currentTopicDir myTopicConfig >>= spawnShellIn
+
+spawnShellIn :: Dir -> X ()
+spawnShellIn dir = spawn $ "gnome-terminal --working-directory="++dir
+
+goto :: Topic -> X ()
+goto = switchTopic myTopicConfig
+
+promptedGoto :: X ()
+promptedGoto = workspacePrompt myPromptConfig goto
+
+promptedShift :: X ()
+promptedShift = workspacePrompt myPromptConfig $ windows . W.shift 
+
+mailAction :: X ()
+mailAction = spawn $ "evolution"
 ------------------------------------------------------------------------
 -- Window rules
 -- Execute arbitrary actions and WindowSet manipulations when managing
@@ -79,23 +120,23 @@ myWorkspaces = ["1:code","2:web","3:term","4:im","5:sql","6:files","7:media"] ++
 --            webApps       = ["Firefox-bin", "Opera"] -- open on desktop 2
 --            imApps        = ["Ksirc"]                -- open on desktop 3
 myManageHook = composeAll
-    [ className =? "Chromium"       --> doShift "2:web"
+    [ className =? "Chromium"       --> doShift "web"
     , resource  =? "desktop_window" --> doIgnore
     , className =? "Galculator"     --> doFloat
     , className =? "Gimp"           --> doFloat
-    , className =? "Google-chrome"  --> doShift "2:web"
-    , className =? "firefox"  --> doShift "2:web"
+    , className =? "Google-chrome"  --> doShift "web"
+    , className =? "Firefox"  --> doShift "web"
     , resource  =? "gpicview"       --> doFloat
     , resource  =? "kdesktop"       --> doIgnore
     , className  =? "Do"       --> doIgnore
-    , className  =? "nautilus"       --> doShift "6:files"
-    , className  =? "terminal"       --> doShift "3:term"
+    , className  =? "nautilus"       --> doShift "files"
+    , className  =? "terminal"       --> doShift "terminal"
     , className =? "MPlayer"        --> doFloat
     , resource =? "xfce4-notifyd" --> doIgnore
-    , resource  =? "skype"          --> doShift "4:im"
+    , resource  =? "skype"          --> doShift "skype"
 --    , className =? "Skype" <&&> role =? "" --> doCenterFloat'
-    , resource  =? "amarok"          --> doShift "7:media"
-    , className =? "Xchat"          --> doShift "4:im"
+    , resource  =? "amarok"          --> doShift "music"
+    , className =? "Xchat"          --> doShift "irc"
     , isDialog --> doFloat
     , isFullscreen --> (doF W.focusDown <+> doFullFloat)]
     where
@@ -162,7 +203,13 @@ myBorderWidth = 4
 --
 myModMask = mod1Mask
 
-myPromptConfig = defaultXPConfig { searchPredicate = isInfixOf,autoComplete = Just 500000 }
+myPromptConfig = defaultXPConfig { 
+         searchPredicate = isInfixOf
+        ,autoComplete = Just 500000 
+        ,font = myFont
+        ,fgColor = colorWhiteAlt
+        ,bgColor = colorBlack
+        }
 
 myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   ----------------------------------------------------------------------
@@ -251,10 +298,10 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- Move focus to the master window.
   , ((modMask, xK_m),
      windows W.focusMaster  )
-  , ((modMask, xK_g), 
-     windowPromptGoto  myPromptConfig)
-  , ((modMask , xK_b     ),
-     windowPromptBring myPromptConfig)
+  , ((modMask              , xK_a     ), currentTopicAction myTopicConfig)
+  , ((modMask              , xK_g     ), promptedGoto)
+  , ((modMask .|. shiftMask, xK_g     ), promptedShift)
+  , ((modMask , xK_b     ),  windowPromptBring myPromptConfig)
 --  , ((modMask .|. shiftMask, xK_m    V ),
 --     workspacePrompt myPromptConfig . )
   -- Swap the focused window and the master window.
@@ -315,7 +362,6 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
       | (key, sc) <- zip [xK_w, xK_e, xK_r] [0..]
       , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
  
- 
 ------------------------------------------------------------------------
 -- Mouse bindings
 --
@@ -352,7 +398,7 @@ myMouseBindings (XConfig {XMonad.modMask = modMask}) = M.fromList $
 -- > logHook = dynamicLogDzen
 --
  
-myFont               = "-*-montecarlo-medium-r-normal-*-11-*-*-*-*-*-*-*"
+myFont               = "-*-montecarlo-medium-r-normal-*-16-*-*-*-*-*-*-*"
 dzenFont             = "-*-montecarlo-medium-r-normal-*-11-*-*-*-*-*-*-*"
 colorBlack           = "#020202" --Background (Dzen_BG)
 colorBlackAlt        = "#1c1c1c" --Black Xdefaults
@@ -481,7 +527,7 @@ defaults = defaultConfig {
     focusFollowsMouse  = myFocusFollowsMouse,
     borderWidth        = myBorderWidth,
     modMask            = myModMask,
-    workspaces         = myWorkspaces,
+    workspaces         = myTopics,
     normalBorderColor  = myNormalBorderColor,
     focusedBorderColor = myFocusedBorderColor,
  
