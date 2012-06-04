@@ -29,6 +29,7 @@ import XMonad.Layout.Circle
 import XMonad.Prompt
 import XMonad.Prompt.Window
 import XMonad.Prompt.Workspace
+import XMonad.Layout.PerWorkspace
 import XMonad.Config.Gnome
 import XMonad.Util.Replace
 import XMonad.Util.Run(spawnPipe)
@@ -157,14 +158,21 @@ myManageHook = composeAll
 -- which denotes layout choice.
 --
 myLayout = avoidStruts (
-    Tall 1 (3/100) (1/2) |||
-    Mirror (Tall 1 (3/100) (1/2)) |||
-    tabbed shrinkText tabConfig |||
-    magnifier (Grid) |||
-    Circle |||
-    withIM (1%7) (Title "martin.harvan1 - Skype™ (Beta)") Grid |||
-    noBorders (fullscreenFull Full)
+    onWorkspace "facebook" empathyIM $
+    onWorkspace "skype" skypeIM $
+    (
+        Tall 1 (3/100) (1/2) |||
+        Mirror (Tall 1 (3/100) (1/2)) |||
+        tabbed shrinkText tabConfig |||
+--        magnifier (Grid) |||
+        Grid |||
+        Circle 
+--    noBorders (fullscreenFull Full)
+        )
     )
+    where
+        skypeIM = withIM (1%7) (Title "martin.harvan1 - Skype™ (Beta)") Grid 
+        empathyIM = withIM (1%7) (Title "Contact List") Grid 
 
 ------------------------------------------------------------------------
 -- Colors and borders
@@ -398,7 +406,7 @@ myMouseBindings (XConfig {XMonad.modMask = modMask}) = M.fromList $
 -- > logHook = dynamicLogDzen
 --
  
-myFont               = "-*-montecarlo-medium-r-normal-*-16-*-*-*-*-*-*-*"
+myFont               = "-*-montecarlo-medium-r-normal-*-11-*-*-*-*-*-*-*"
 dzenFont             = "-*-montecarlo-medium-r-normal-*-11-*-*-*-*-*-*-*"
 colorBlack           = "#020202" --Background (Dzen_BG)
 colorBlackAlt        = "#1c1c1c" --Black Xdefaults
