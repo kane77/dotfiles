@@ -352,7 +352,7 @@ myMouseBindings (XConfig {XMonad.modMask = modMask}) = M.fromList $
 -- > logHook = dynamicLogDzen
 --
  
-myFont               = "-xos5-terminus-medium-r-normal-*-12-120-72-72-c-60-*-*"
+myFont               = "-*-montecarlo-medium-r-normal-*-11-*-*-*-*-*-*-*"
 dzenFont             = "-*-montecarlo-medium-r-normal-*-11-*-*-*-*-*-*-*"
 colorBlack           = "#020202" --Background (Dzen_BG)
 colorBlackAlt        = "#1c1c1c" --Black Xdefaults
