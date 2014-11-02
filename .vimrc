@@ -1,9 +1,54 @@
-" Vimrc file, http://phuzz.org
+set nocompatible              " be iMproved, required
+filetype off                  " required
 
+" set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+" alternatively, pass a path where Vundle should install plugins
+"call vundle#begin('~/some/path/here')
+
+" let Vundle manage Vundle, required
+Plugin 'gmarik/Vundle.vim'
+
+" The following are examples of different formats supported.
+" Keep Plugin commands between vundle#begin/end.
+" plugin on GitHub repo
+Plugin 'tpope/vim-fugitive'
+Plugin 'scrooloose/nerdtree'
+Plugin 'tpope/vim-surround'
+Plugin 'bling/vim-airline'
+Plugin 'molokai'
+Plugin 'Lokaltog/vim-easymotion'
+Plugin 'kien/ctrlp.vim'
+Plugin 'Solarized'
+Plugin 'Raimondi/delimitMate'
+Plugin 'pangloss/vim-javascript'
+Plugin 'nathanaelkane/vim-indent-guides'
+Plugin 'jelera/vim-javascript-syntax'
+Plugin 'honza/vim-snippets'
+Plugin 'SirVer/ultisnips'
+Plugin 'sjbach/lusty'
+Plugin 'kien/ctrlp.vim'
+" plugin from http://vim-scripts.org/vim/scripts.html
+Plugin 'L9'
+" Git plugin not hosted on GitHub
+Plugin 'git://git.wincent.com/command-t.git'
+Plugin 'https://github.com/tfnico/vim-gradle'
+
+" All of your Plugins must be added before the following line
+call vundle#end()            " required
+filetype plugin indent on    " required
+let g:ycm_add_preview_to_completeopt=0
+let g:ycm_confirm_extra_conf=0
+set completeopt-=preview 
 set nocompatible    " use vim defaults
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<c-b>"
+let g:UltiSnipsJumpBackwardTrigger="<c-z>"
 set hidden
 set ls=2            " allways show status line
 set shm=at
+imap <C-c> <CR><Esc>O
 set tabstop=4       " numbers of spaces of tab character
 set expandtab
 set shiftwidth=4    " numbers of spaces to (auto)indent
@@ -17,6 +62,16 @@ set novisualbell    " turn off visual bell
 set nobackup        " do not keep a backup file
 set number          " show line numbers
 set ignorecase      " ignore case when searching
+
+
+"Nerdtree
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+unmap 
+map ,n :NERDTreeToggle<CR>
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
+
+
 "set noignorecase   " don't ignore case
 set title           " show title in console title bar
 set ttyfast         " smoother changes
@@ -51,7 +106,8 @@ syntax on           " syntax highlighing
 if has("gui_running")
 set guifont=Droid\ Sans\ Mono\ 9  " use this font
     set lines=999 columns=999
-    colorscheme molokai    " use this color scheme
+    set background=dark
+    colorscheme solarized    " use this color scheme
 else
     set background=dark        " adapt colors for background
 endif
@@ -99,7 +155,9 @@ map ,v "+gP
 map ,a ggVG
 map ,t :TlistToggle<CR>
 map ,r :TlistHighlightTag
+map ,gb :! ./gradlew build
 map <Leader>p :LustyJuggler<CR>
 let g:CommandTMaxFiles=100000
 set wildignore+=*.gif,*.jpg,*.png,.git,*.class
 "----- write out html file
+
