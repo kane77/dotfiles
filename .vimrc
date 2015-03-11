@@ -213,6 +213,8 @@ map ,gb :! ./gradlew build
 map ,p :CtrlP /home/harvan/ws/nwp-parent/nwp-webapp/src/main/webapp<CR>
 map ,o :CtrlP /home/harvan/ws/nwp-parent/<CR>
 map ,gf T"lvt"gf
+nmap <C-Up> ddkP
+nmap <C-Down> ddp
 map ,n :NERDTreeToggle<CR>
 map <Leader>p :LustyJuggler<CR>
 map <Leader>b :CtrlPBuffer<CR>
@@ -220,6 +222,10 @@ map ,h y:silent grep! "<C-R>"" <Bar> cw<CR><CR>
 map <F4> :execute "vimgrep /" . expand("<cword>") . "/j **" <Bar> cw<CR><CR>
 map ,b :grep! "\#TODO\#" <Bar> cw<CR><CR>
 "nnoremap K :grep! "\b<C-R><C-W>\b"<CR>:cw<CR><CR>
+
+vmap <C-Up> xkP`[V`]
+vmap <C-Down> xp`[V`]
+
 let g:CommandTMaxFiles=100000
 set wildignore+=*.gif,*.jpg,*.png,.git,*.class,*.ogg,*.doc,*.xls,*.xlsx
 set wildignore+=*.zip,*.o,*.pdf,*.mpg,*.ZIP,*.MPG,*.PDF,*.jar,*.class
