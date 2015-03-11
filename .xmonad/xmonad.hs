@@ -37,6 +37,8 @@ import XMonad.Util.EZConfig(additionalKeys)
 import XMonad.Hooks.UrgencyHook
 import XMonad.Hooks.EwmhDesktops
 import Graphics.X11.ExtraTypes.XF86
+import XMonad.Layout.LayoutScreens
+import XMonad.Layout.TwoPane
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 
@@ -57,8 +59,8 @@ myWorkspaces = ["1:code","2:web","3:term","4:im","5:sql","6:files","7:media"] ++
  
 myTopics :: [Topic]
 myTopics =
-    [  "eclipse", "web", "terminal", "skype", "sql", "files"
-        , "mail", "music", "dashboard", "talk", "text", "tools", "persloadm", "perforce", "facebook", "xmonad", "prod", "irc"
+    [  "eclipse", "web", "vim","terminal", "skype", "files"
+        , "mail", "putty", "dashboard", "talk", "text", "tools", "irc"
     ]
 myTopicConfig :: TopicConfig
 myTopicConfig = defaultTopicConfig
@@ -68,15 +70,15 @@ myTopicConfig = defaultTopicConfig
         , defaultTopic = "dashboard"
         , topicActions = M.fromList $
         [ ("eclipse", spawn "eclipse")
+          ,("vim", spawn "gvim")
           ,("web", spawn "firefox")
           ,("skype", spawn "skype")
           ,("facebook", spawn "empathy")
           ,("mail", spawn "evolution")
           ,("sql", spawn "oracle-sqldeveloper")
-          ,("perforce", spawn "p4v")
+          ,("putty", spawn "gnome-terminal --window-with-profile=putty -e ~/load_putty.sh")
           ,("irc" , spawn "xchat")
-          ,("persloterm", spawn "persloterm")
-          ,("files", spawn "marlin")]
+          ,("files", spawn "nautilus")]
     }
 
 spawnShell :: X ()
@@ -171,7 +173,7 @@ myLayout = avoidStruts (
         )
     )
     where
-        skypeIM = withIM (1%7) (Title "martin.harvan1 - Skype™ (Beta)") Grid 
+        skypeIM = withIM (1%7) (Title "IBM Lotus Sametime Connect - martin.harvan@sk.ibm.com") Grid 
         empathyIM = withIM (1%7) (Title "Contact List") Grid 
 
 ------------------------------------------------------------------------
@@ -230,7 +232,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
 
   -- Lock the screen using xscreensaver.
   , ((modMask .|. controlMask, xK_l),
-     spawn "xscreensaver-command -lock")
+     spawn "gnome-screensaver-command -l")
 
   -- Launch dmenu via yeganesh.
   -- Use this to launch programs without a key binding.
@@ -241,15 +243,17 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- the mouse.
   , ((modMask .|. shiftMask, xK_p),
      spawn "select-screenshot")
+  , ((modMask .|. shiftMask,                 xK_space), layoutScreens 2 (TwoPane 0.5 0.5))
+   , ((modMask .|. controlMask .|. shiftMask, xK_space), rescreen)
 
   -- Take full screenshot in multi-head mode.
   -- That is, take a screenshot of everything you see.
   , ((modMask .|. controlMask .|. shiftMask, xK_p),
      spawn "screenshot")
 
-    , ((0, xF86XK_AudioMute), spawn "sh /home/mharvan/configs/bin/voldzen.sh t -d")                     --Mute/unmute volume
-    , ((0, xF86XK_AudioRaiseVolume), spawn "sh /home/mharvan/configs/bin/voldzen.sh + -d")              --Raise volume
-    , ((0, xF86XK_AudioLowerVolume), spawn "sh /home/mharvan/configs/bin/voldzen.sh - -d")              --Lower volume
+    , ((0, xF86XK_AudioMute), spawn "sh /home/harvan/configs/bin/voldzen.sh t -d")                     --Mute/unmute volume
+    , ((0, xF86XK_AudioRaiseVolume), spawn "sh /home/harvan/configs/bin/voldzen.sh + -d")              --Raise volume
+    , ((0, xF86XK_AudioLowerVolume), spawn "sh /home/harvan/configs/bin/voldzen.sh - -d")              --Lower volume
   -- Audio previous.
   , ((0, 0x1008FF16),
      spawn "")
@@ -429,9 +433,9 @@ myUrgencyHook = withUrgencyHook dzenUrgencyHook
 
 -- StatusBars
 myWorkspaceBar, myBottomStatusBar, myTopStatusBar :: String
-myWorkspaceBar    = "dzen2 -x '0' -y '1034' -h '16' -w '1000' -ta 'l' -fg '" ++ colorWhiteAlt ++ "' -bg '" ++ colorBlack ++ "' -fn '" ++ dzenFont ++ "' -p -e ''"
-myBottomStatusBar = "/home/mharvan/configs/bin/bottomstatusbar.sh"
-myTopStatusBar    = "/home/mharvan/configs/bin/topstatusbar.sh"
+myWorkspaceBar    = "dzen2 -x '0' -y '1064' -h '16' -w '1500' -ta 'l' -fg '" ++ colorWhiteAlt ++ "' -bg '" ++ colorBlack ++ "' -fn '" ++ dzenFont ++ "' -p -e ''"
+myBottomStatusBar = "/home/harvan/configs/bin/bottomstatusbar.sh"
+myTopStatusBar    = "/home/harvan/configs/bin/topstatusbar.sh"
 
 -- myWorkspaceBar config
 myLogHook :: Handle -> X ()
@@ -547,3 +551,4 @@ defaults = defaultConfig {
     layoutHook         = myLayout,
     manageHook         = myManageHook
 }
+
